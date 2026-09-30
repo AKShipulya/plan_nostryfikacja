@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивный план LEW 2027 | GitHub Pages Ready</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --accent-color: #0284c7;
+            --accent-hover: #0369a1;
+            --success-color: #16a34a;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+            --warning-color: #ea580c;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 130px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 { margin: 0 0 8px 0; color: #0f172a; font-size: 1.75rem; }
+        p { margin: 4px 0; color: #64748b; font-size: 0.95rem; }
+
+        .progress-container {
+            margin-top: 15px;
+            background: #e2e8f0;
+            border-radius: 20px;
+            height: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #0284c7, #16a34a);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: white;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: var(--accent-hover); }
+        .btn-outline { background: transparent; color: var(--text-color); border: 1px solid var(--border-color); }
+        .btn-outline:hover { background: #f1f5f9; }
+        .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
+        .btn-success { background: var(--success-color); }
+        .btn-success:hover { background: #15803d; }
+
+        /* Week Card & Collapsible Styling */
+        .week-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--accent-color);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .week-card.week-completed {
+            border-left-color: var(--success-color);
+            background-color: var(--success-bg);
+            border-color: var(--success-border);
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            user-select: none;
+            transition: padding 0.2s;
+        }
+
+        .week-card.week-completed .week-header {
+            border-bottom-color: var(--success-border);
+        }
+
+        .week-card.collapsed .week-header {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .week-title-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-arrow {
+            font-size: 0.75rem;
+            color: #64748b;
+            transition: transform 0.2s ease;
+        }
+
+        .week-card.collapsed .toggle-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .week-title { font-weight: 700; font-size: 1.1rem; color: #0f172a; }
+
+        .week-check-icon {
+            display: none;
+            font-size: 1.1rem;
+        }
+
+        .week-card.week-completed .week-check-icon {
+            display: inline;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: 600;
+        }
+
+        .week-card.week-completed .tag {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .day-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .week-card.collapsed .day-list {
+            display: none;
+        }
+
+        /* Day Item Styling */
+        .day-item {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 12px;
+            align-items: start;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #f1f5f9;
+            position: relative;
+        }
+
+        .week-card.week-completed .day-item {
+            background: #ffffff;
+            border-color: #d1fae5;
+        }
+
+        .day-item.completed {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .day-item.completed .day-title {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+
+        .checkbox-custom {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-top: 3px;
+        }
+
+        .day-header-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .day-title { font-weight: 600; color: #0f172a; }
+        .day-time { font-size: 0.8rem; color: #64748b; font-weight: normal; }
+        
+        .info-pop-trigger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #e0f2fe;
+            color: #0284c7;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+        }
+        .info-pop-trigger:hover { background: #bae6fd; }
+
+        .popup-card {
+            display: none;
+            position: absolute;
+            top: 30px;
+            left: 0;
+            z-index: 100;
+            width: 320px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 0.82rem;
+            color: #334155;
+        }
+
+        .info-pop-trigger:hover .popup-card,
+        .popup-card.active {
+            display: block;
+        }
+
+        .popup-title { font-weight: 700; color: #0f172a; margin-bottom: 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
+        .popup-section { margin-bottom: 6px; }
+        .popup-section strong { color: #0284c7; }
+
+        .day-lepolek {
+            font-size: 0.8rem;
+            color: #0369a1;
+            background: #f0f9ff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 6px;
+            border: 1px solid #bae6fd;
+        }
+
+        /* Collapsible Notes */
+        .notes-wrapper { margin-top: 8px; }
+        .note-toggle-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .note-toggle-btn.has-note {
+            background: #fef3c7;
+            border-color: #fde047;
+            color: #b45309;
+            font-weight: 600;
+        }
+
+        .note-input-container {
+            display: none;
+            margin-top: 8px;
+            background: #ffffff;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .note-textarea {
+            width: 100%;
+            height: 60px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px;
+            font-size: 0.85rem;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        .note-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        /* Fixed Pomodoro Widget */
+        .pomodoro-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: #ffffff;
+            border: 2px solid #0284c7;
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            width: 230px;
+            text-align: center;
+        }
+
+        .pomo-header {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .pomo-timer {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #0f172a;
+            font-family: monospace;
+            margin: 4px 0;
+        }
+
+        .pomo-status {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #0284c7;
+            margin-bottom: 8px;
+        }
+
+        .pomo-controls {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .pomo-mode-btns {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 8px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 6px;
+        }
+
+        .audio-test-btn {
+            font-size: 0.65rem;
+            color: #0284c7;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 4px;
+            display: block;
+            width: 100%;
+        }
+
+        @media (max-width: 600px) {
+            .pomodoro-widget {
+                bottom: 10px;
+                right: 10px;
+                width: 190px;
+                padding: 8px 10px;
+            }
+            .pomo-timer { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>План подготовки к LEW / Нострификации (Цель: Июнь 2027)</h1>
+        <p><strong>Цикл 1 (12 недель):</strong> Полное покрытие базы CEM + High-Yield Польские Гайдлайны + Zeszyt Błędów</p>
+        <p><strong>Режим:</strong> 2.5–3 ч в будни (3 блока) | 1.5 ч в субботу | Воскресенье — Выходной</p>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-text" id="progressText">0% выполнено</div>
+        </div>
+    </header>
+
+    <div class="controls">
+        <select class="filter-select" id="subjectFilter" onchange="filterWeeks()">
+            <option value="all">Все предметы (12 недель)</option>
+            <option value="interna">Терапия (Choroby wewnętrzne)</option>
+            <option value="ratunkowa">Неотложная медицина (Ratunkowa)</option>
+            <option value="chirurgia">Хирургия (Chirurgia)</option>
+            <option value="ginekologia">Акушерство и Гинекология</option>
+            <option value="pediatria">Педиатрия (Pediatria)</option>
+            <option value="rodzinna">Семейная медицина (Medycyna Rodzinna)</option>
+            <option value="psychiatria_neurologia">Психиатрия, Неврология и Дерматология</option>
+            <option value="prawo_powtorka">Право, Этика и Симуляции</option>
+        </select>
+
+        <button class="btn btn-outline" onclick="collapseAllWeeks()">Свернуть все</button>
+        <button class="btn btn-outline" onclick="expandAllWeeks()">Развернуть все</button>
+        <button class="btn btn-outline" onclick="resetProgress()">Сбросить прогресс</button>
+    </div>
+
+    <div id="planContainer"></div>
+</div>
+
+<!-- Floating Pomodoro Widget -->
+<div class="pomodoro-widget">
+    <div class="pomo-header">LEW Pomodoro Timer</div>
+    <div class="pomo-status" id="pomoStatus">Учеба (Блок 45 мин)</div>
+    <div class="pomo-timer" id="pomoDisplay">45:00</div>
+    
+    <div class="pomo-controls">
+        <button class="btn btn-sm" id="pomoStartBtn" onclick="togglePomodoro()">Старт</button>
+        <button class="btn btn-sm btn-outline" onclick="resetPomodoro()">Сброс</button>
+    </div>
+
+    <div class="pomo-mode-btns">
+        <button class="btn btn-sm btn-outline" style="font-size: 0.65rem;" onclick="setPomoMode(45, 'Учеба (45 мин)')">45м Учеба</button>
+        <button class="btn btn-sm btn-outline" style="font-size: 0.65rem;" onclick="setPomoMode(10, 'Отдых (10 мин)')">10м Отдых</button>
+    </div>
+    <button class="audio-test-btn" onclick="testAlarmSound()">🔔 Проверить звук будильника</button>
+</div>
+
+<script>
+const planData = [
+    {
+        week: 1,
+        subject: "interna",
+        title: "Неделя 1: Кардиология I (Гипертензия, ИБС, ОКС, Аритмии)",
+        days: [
+            {
+                id: "w1d1",
+                title: "Пн: Артериальная гипертензия (Nadciśnienie tętnicze)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Kardiologia -> Nadciśnienie tętnicze [Фильтр: Baza CEM]",
+                popup: {
+                    what: "Классификация АД, первичная и вторичная гипертензия, целевые значения АД по PTK/ESC.",
+                    focus: "Препараты 1-й линии (ACEi/ARB, CCB, тиазиды), комбинации в одной таблетке (SPC), гипертонический криз (Labetalol, Urapidil, Nitrogliceryna).",
+                    reading: "Szczeklik Mały: раздел Nadciśnienie tętnicze / Wytyczne PTK."
+                }
+            },
+            {
+                id: "w1d2",
+                title: "Вт: Хроническая ИБС (Choroba niedokrwienna serca)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Kardiologia -> Stabilna choroba wieńcowa",
+                popup: {
+                    what: "Стабильная стенокардия, оценка риска SCORE2, липидограмма и статины.",
+                    focus: "Целевой уровень LDL (ниже 55 или 40 мг/дл при очень высоком риске), показания к коронарографии, антиагреганты (Kwas acetylosalicylowy, Clopidogrel).",
+                    reading: "Szczeklik Mały: Stabilna choroba wieńcowa."
+                }
+            },
+            {
+                id: "w1d3",
+                title: "Ср: Острый коронарный синдром (STEMI / NSTE-ACS)",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Kardiologia -> Ostre zespoły wieńcowe",
+                popup: {
+                    what: "Острое повреждение миокарда, дифференциация STEMI и NSTE-ACS по ЭКГ и тропонинам.",
+                    focus: "Временные окна для PCI (до 120 мин) и ТЛТ, двойная антитромбоцитарная терапия (DAPT: ASA + Ticagrelor/Prasugrel), гепарины.",
+                    reading: "Szczeklik Mały: Ostre zespoły wieńcowe / LEW w pigułce."
+                }
+            },
+            {
+                id: "w1d4",
+                title: "Чт: Нарушения ритма и проводимости (Zaburzenia rytmu)",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Kardiologia -> Zaburzenia rytmu i przewodzenia",
+                popup: {
+                    what: "Фибрилляция предсердий (Migotanie przedsionków), АВ-блокады, желудочковые тахикардии.",
+                    focus: "Шкалы CHA2DS2-VASc и HAS-BLED, антикоагулянты (NOAC/DOAC vs VKA), медикаментозная и электрическая кардиоверсия.",
+                    reading: "Szczeklik: Migotanie przedsionków."
+                }
+            },
+            {
+                id: "w1d5",
+                title: "Пт: Сердечная недостаточность (Niewydolność serca)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Kardiologia -> Niewydolność serca",
+                popup: {
+                    what: "Хроническая (CHSN) и острая (OSN) сердечная недостаточность, отек легких.",
+                    focus: "Фантастическая четверка лечения HFrEF: ARNI/ACEi + Beta-blocker + MRA (Eplerenon) + SGLT2i (Dapagliflozin/Empagliflozin). Шкала NYHA.",
+                    reading: "Szczeklik: Niewydolność serca."
+                }
+            },
+            {
+                id: "w1d6",
+                title: "Сб: Субботний тест по Кардиологии I & Разбор Zeszyt Błędów",
+                time: "1.5 ч",
+                lepolekPath: "Testy -> Stwórz własny test -> Kardiologia (40 pytań z Bazy CEM)",
+                popup: {
+                    what: "Контрольное тестирование и глубокий разбор ошибочных вопросов.",
+                    focus: "Повторите польские названия препаратов и формулировки в вопросах CEM.",
+                    reading: "Собственные заметки и тетрадь ошибок."
+                }
+            }
+        ]
+    },
+    {
+        week: 2,
+        subject: "interna",
+        title: "Неделя 2: Кардиология II и Пульмонология",
+        days: [
+            {
+                id: "w2d1",
+                title: "Пн: Пороки клапанов и Инфекционный эндокардит (IZW)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Kardiologia -> Wady serca / IZW",
+                popup: {
+                    what: "Стеноз и недостаточность аортального/митрального клапанов, критерии Duke для IZW.",
+                    focus: "Показания к антибиотикопрофилактике IZW перед стоматологическими процедурами (Amoksycylina 2g).",
+                    reading: "Szczeklik: IZW i Wady serca."
+                }
+            },
+            {
+                id: "w2d2",
+                title: "Вт: ТЭЛА (Zatorowość płucna) и Тромбоз глубоких вен (ZTW)",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Kardiologia -> Zatorowość płucna",
+                popup: {
+                    what: "Венозный тромбоэмболизм, ТЭЛА высокого и невысокого риска.",
+                    focus: "Шкалы Wells и Geneva, D-димер, КТ-ангиография, применение гепаринов (HDCz/LMWH) и тромболизиса (Alteplase).",
+                    reading: "Szczeklik: Zatorowość płucna."
+                }
+            },
+            {
+                id: "w2d3",
+                title: "Ср: Астма (Astma) и ХОБЛ (POChP)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Pulmonologia -> Astma / POChP",
+                popup: {
+                    what: "Хронические обструктивные заболевания легких, критерии GINA и GOLD.",
+                    focus: "Спирометрия (индекс Тиффно FEV1/FVC < 0.70), ступени терапии астмы (wziewne glikokortykosteroidy + formoterol), обострение POChP.",
+                    reading: "Szczeklik: Astma i POChP."
+                }
+            },
+            {
+                id: "w2d4",
+                title: "Чт: Пневмонии (PZP/SZP) и Газометрия",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Pulmonologia -> Zapalenia płuc",
+                popup: {
+                    what: "Внебольничная (PZP) и госпитальная пневмония, дыхательная недостаточность.",
+                    focus: "Шкала CURB-65 (критерии госпитализации), эмпирическая антибиотикотерапия (Amoksycylina, Makrolidy), интерпретация газометрии (ацидоз/алкалоз).",
+                    reading: "Szczeklik: Zapalenia płuc."
+                }
+            },
+            {
+                id: "w2d5",
+                title: "Пт: Раковые заболевания легких и Плевриты",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Pulmonologia -> Rak płuca / Opłucna",
+                popup: {
+                    what: "Рак легкого (мелкоклеточный/немелкоклеточный), плевральный пот, пневмоторакс.",
+                    focus: "Критерии Light (выпот транссудат vs экссудат), тревожные симптомы (кровохарканье, снижение веса).",
+                    reading: "Szczeklik: Rak płuca."
+                }
+            },
+            {
+                id: "w2d6",
+                title: "Сб: Тест по Кардиологии II и Пульмонологии",
+                time: "1.5 ч",
+                lepolekPath: "Testy -> Kardiologia + Pulmonologia (40 pytań CEM)",
+                popup: {
+                    what: "Проверка пройденного материала за неделю.",
+                    focus: "Разбор ловушек в вопросах по спирометрии и ТЭЛА.",
+                    reading: "Заметки Lepolek."
+                }
+            }
+        ]
+    },
+    {
+        week: 3,
+        subject: "interna",
+        title: "Неделя 3: Гастроэнтерология и Гепатология",
+        days: [
+            {
+                id: "w3d1",
+                title: "Пн: Желудок и Пищевод (ГЭРБ, Язва, H. pylori)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Gastroenterologia -> Żołądek i przełyk",
+                popup: {
+                    what: "Рефлюксная болезнь, язвенная болезнь желудка и ДПК, инфекция Helicobacter pylori.",
+                    focus: "Польская схема эрадикации H. pylori (квадротерапия с висмутом: IPP + Bizmut + Metronidazol + Tetracyklina на 14 дней). Шкала Blatchford.",
+                    reading: "Szczeklik: Choroba wrzodowa."
+                }
+            },
+            {
+                id: "w3d2",
+                title: "Вт: Кишечник (ВЗК / NZZJ, Целиакия, Диарея)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Gastroenterologia -> Jelita",
+                popup: {
+                    what: "Язвенный колит (Wrzodziejące zapalenie jelita grubego) vs Болезнь Крона (Choroba Leśniowskiego-Crohna).",
+                    focus: "Внекишечные проявления NZZJ, кальпротектин в кале, лечение Clostridium difficile (Fidaksomycyna / Wankomycyna).",
+                    reading: "Szczeklik: NZZJ."
+                }
+            },
+            {
+                id: "w3d3",
+                title: "Ср: Гепатиты (WZW) и Аутоиммунные заболевания печени",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Gastroenterologia -> Wątroba",
+                popup: {
+                    what: "Вирусные гепатиты A, B, C; PBC (Первичный билиарный холангит), PSC, AIH.",
+                    focus: "Маркеры WZW B (HBsAg, anti-HBs, anti-HBc IgM/IgG), маркеры PBC (антитела AMA).",
+                    reading: "Szczeklik: WZW i PBC."
+                }
+            },
+            {
+                id: "w3d4",
+                title: "Чт: Цирроз печени (Marskość wątroby) и Осложнения",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Gastroenterologia -> Marskość wątroby",
+                popup: {
+                    what: "Печеночная недостаточность, портальная гипертензия, асцит, печеночная энцефалопатия.",
+                    focus: "Шкалы Child-Pugh и MELD, лечение асцита (Spironolakton + Furosemid), SBP (спонтанный бактериальный перитонит), Laktuloza при энцефалопатии.",
+                    reading: "Szczeklik: Marskość wątroby."
+                }
+            },
+            {
+                id: "w3d5",
+                title: "Пт: Поджелудочная железа (OZT / PZT)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Gastroenterologia -> Trzustka",
+                popup: {
+                    what: "Острый (OZT) и хронический (PZT) панкреатит.",
+                    focus: "Этиология (желчнокаменная болезнь и алкоголь), амилаза/липаза крови, критерии тяжести (Atlanta), инфузионная терапия.",
+                    reading: "Szczeklik: OZT i PZT."
+                }
+            },
+            {
+                id: "w3d6",
+                title: "Сб: Тест по Гастроэнтерологии",
+                time: "1.5 ч",
+                lepolekPath: "Testy -> Gastroenterologia (40 pytań CEM)",
+                popup: { what: "Проверка знаний по гастроэнтерологии.", focus: "Разбор серологии гепатитов и ВЗК.", reading: "Заметки." }
+            }
+        ]
+    },
+    {
+        week: 4,
+        subject: "interna",
+        title: "Неделя 4: Нефрология и Эндокринология",
+        days: [
+            {
+                id: "w4d1",
+                title: "Пн: Острое (AKI) и Хроническое (PChN) повреждение почек",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Nefrologia -> AKI / PChN",
+                popup: {
+                    what: "Классификации KDIGO, стадирование ХБП по eGFR и альбуминурии.",
+                    focus: "Показания к экстренному диализу (критерии A-E-I-O-U: Ацидоз, Электролиты/гиперкалиемия, Интоксикация, Перегрузка/Obrzęk, Уремия).",
+                    reading: "Szczeklik: AKI i PChN."
+                }
+            },
+            {
+                id: "w4d2",
+                title: "Вт: Гломерулонефриты и Нарушения Электролитов",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Nefrologia -> Kłębuszkowe zapalenia / Elektrolity",
+                popup: {
+                    what: "Нефротический и нефритический синдромы, гиперкалиемия и гипонатриемия.",
+                    focus: "ЭКГ при гиперкалиемии (высокий зубчик T, расширение QRS), неотложное лечение (Glukonian wapnia, Insulina + Glukoza, Salbutamol).",
+                    reading: "Szczeklik: Zaburzenia elektrolitowe."
+                }
+            },
+            {
+                id: "w4d3",
+                title: "Ср: Сахарный диабет (Cukrzyca) и Острые осложнения",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Diabetologia",
+                popup: {
+                    what: "Диагностика СД по рекомендациям PTD, СД 1 и 2 типа, кетоацидоз (DKA).",
+                    focus: "Критерии диагноза (тощаковая глюкоза ≥ 126 мг/дл, OGTT ≥ 200, HbA1c ≥ 6.5%), неотложное лечение DKA (инфузия, инсулин, K+).",
+                    reading: "Wytyczne PTD / Szczeklik: Cukrzyca."
+                }
+            },
+            {
+                id: "w4d4",
+                title: "Чт: Щитовидная железа (Tarczyca)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Endokrynologia -> Tarczyca",
+                popup: {
+                    what: "Гипотиреоз (Hashimoto), Гипертиреоз (Choroba Gravesa-Basedowa), узлы щитовидной железы.",
+                    focus: "Интерпретация ТТГ, fT3, fT4; тиреотоксический криз, система Bethesda при пункционной биопсии (BACC).",
+                    reading: "Szczeklik: Choroby tarczycy."
+                }
+            },
+            {
+                id: "w4d5",
+                title: "Пт: Надпочечники и Гипофиз",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Choroby wewnętrzne -> Endokrynologia -> Nadnercza / Przysadka",
+                popup: {
+                    what: "Синдром Кушинга, надпочечниковая недостаточность (Choroba Addisona), пролактинома.",
+                    focus: "Острая надпочечниковая недостаточность (Przełom nadnerczowy - лечение: Hydrokortyzon iv + 0.9% NaCl), гипернатриемия/гипокалиемия при альдостеронизме.",
+                    reading: "Szczeklik: Nadnercza."
+                }
+            },
+            {
+                id: "w4d6",
+                title: "Сб: Тест по Нефрологии и Эндокринологии",
+                time: "1.5 ч",
+                lepolekPath: "Testy -> Nefrologia + Endokrynologia (40 pytań CEM)",
+                popup: { what: "Проверка знаний за неделю.", focus: "Разбор диабетологии и электролитов.", reading: "Заметки." }
+            }
+        ]
+    },
+    {
+        week: 5,
+        subject: "ratunkowa",
+        title: "Неделя 5: Неотложная медицина (Medycyna Ratunkowa) — High Yield!",
+        days: [
+            {
+                id: "w5d1",
+                title: "Пн: Реанимация (BLS/ALS) и Алгоритмы ERC",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Medycyna ratunkowa -> Resuscytacja (BLS/ALS)",
+                popup: {
+                    what: "Внебольничная и госпитальная остановка кровообращения по гайдлайнам ERC.",
+                    focus: "Ритмы дефибриллируемые (VF/pVT) и недефибриллируемые (Asystolia/PEA). Обратимые причины 4H/4T.",
+                    reading: "Wytyczne ERC / LEW w pigułce."
+                }
+            },
+            {
+                id: "w5d2",
+                title: "Вт: Шок (Wstrząs), Анафилаксия и Инсульт (Udar)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Medycyna ratunkowa -> Wstrząs / Udar mózgu",
+                popup: {
+                    what: "Виды шока (кардиогенный, анафилактический, септический), ишемический инсульт.",
+                    focus: "Адреналин при анафилаксии (0.5 мг в/м в передненаружную поверхность бедра), окно 4.5ч для тромболизиса.",
+                    reading: "Szczeklik: Wstrząs / Udar."
+                }
+            },
+            {
+                id: "w5d3",
+                title: "Ср: Отравления (Zatrucia) и Антидоты",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Medycyna ratunkowa -> Zatrucia",
+                popup: {
+                    what: "Острые отравления: парацетамол, угарный газ (CO), опиоиды, бензодиазепины, метанол.",
+                    focus: "Антидоты: N-acetylocysteina (парацетамол), Nalokson (опиоиды), Flumazenil (бензодиазепины).",
+                    reading: "LEW w pigułce: Zatrucia."
+                }
+            },
+            {
+                id: "w5d4",
+                title: "Чт: Травмы и Политравма (ATLS)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Medycyna ratunkowa -> Urazy i oparzenia",
+                popup: {
+                    what: "Оценка пациента с политравмой по алгоритму ABCDE, FAST USG, ожоги.",
+                    focus: "Напряженный пневмоторакс (декомпрессия иглой во 2-м или 5-м межреберье), формула Parkland.",
+                    reading: "Medycyna ratunkowa."
+                }
+            },
+            {
+                id: "w5d5",
+                title: "Пт: Экстренная педиатрия (PBLS / PALS)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Medycyna ratunkowa -> Pediatria ratunkowa",
+                popup: {
+                    what: "Особенности СЛР у детей, инородные тела в дыхательных путях.",
+                    focus: "5 спасательных вдохов в начале, соотношение 15:2 для профессионалов.",
+                    reading: "Wytyczne ERC Pediatria."
+                }
+            },
+            {
+                id: "w5d6",
+                title: "Сб: Субботний тест по Неотложной медицине",
+                time: "1.5 ч",
+                lepolekPath: "Testy -> Medycyna ratunkowa (40 pytań CEM)",
+                popup: { what: "Проверка базовых алгоритмов спасения жизни.", focus: "ERC гайдлайны.", reading: "Заметки." }
+            }
+        ]
+    },
+    {
+        week: 6,
+        subject: "chirurgia",
+        title: "Неделя 6: Хирургия I (Острый живот, Аппендицит, Грыжи)",
+        days: [
+            {
+                id: "w6d1",
+                title: "Пн: Основы хирургии и Периоперационный период",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Chirurgia -> Podstawy chirurgii i okres okołooperacyjny",
+                popup: {
+                    what: "Оценка анестезиологического риска по ASA, заживление ран, профилактика столбняка.",
+                    focus: "Профилактика столбняка при ранах (Szczepionka vs Лечебный иммуноглобулин), антибиотикопрофилактика.",
+                    reading: "Chirurgia podręcznik."
+                }
+            },
+            {
+                id: "w6d2",
+                title: "Вт: Острый живот (Ostry brzuch) и Аппендицит",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Chirurgia -> Ostry brzuch / Zapalenie wyrostka",
+                popup: {
+                    what: "Перитонит, острый аппендицит (Zapalenie wyrostka robaczkowego).",
+                    focus: "Симптомы перитонита (Blumberg, Rovsing, Jaworski), шкала Alvarado.",
+                    reading: "Chirurgia: Ostry brzuch."
+                }
+            },
+            {
+                id: "w6d3",
+                title: "Ср: Кишечная непроходимость (Niedrożność jelit) и Грыжи",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Chirurgia -> Niedrożność i przepukliny",
+                popup: {
+                    what: "Механическая и паралитическая кишечная непроходимость, грыжи (Przepukliny).",
+                    focus: "Чаши Клойбера на рентгенограмме, ущемление грыжи (Przepuklina uwięźnięta).",
+                    reading: "Chirurgia: Niedrożność."
+                }
+            },
+            {
+                id: "w6d4",
+                title: "Чт: Заболевания желчных путей (Kamica żółciowa)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Chirurgia -> Drogi żółciowe",
+                popup: {
+                    what: "Желчнокаменная болезнь, острый холецистит, холангит (Zapalenie dróg żółciowych).",
+                    focus: "Симптом Мерфи, Триада Шарко и Пентада Рейнольдса при холангите, ЕРХПГ (ECPW).",
+                    reading: "Chirurgia: Drogi żółciowe."
+                }
+            },
+            {
+                id: "w6d5",
+                title: "Пт: Хирургия толстой кишки и Проктология",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Chirurgia -> Jelito grube i odbyt",
+                popup: {
+                    what: "Дивертикулит (Zapalenie uchyłków), геморрой, трещины, парапроктит.",
+                    focus: "Классификация Hinchey при дивертикулите, кровотечение из нижних отделов ЖКТ.",
+                    reading: "Chirurgia: Proktologia."
+                }
+            },
+            {
+                id: "w6d6",
+                title: "Сб: Субботнее тестирование по Хирургии I",
+                time: "1.5 ч",
+                lepolekPath: "Testy -> Chirurgia I (40 pytań CEM)",
+                popup: { what: "Проверка знаний по общей и экстренной хирургии.", focus: "Симптомы острого живота.", reading: "Заметки." }
+            }
+        ]
+    },
+    {
+        week: 7,
+        subject: "chirurgia",
+        title: "Неделя 7: Хирургия II (Онкохирургия, Сосуды, Урология)",
+        days: [
+            {
+                id: "w7d1",
+                title: "Пн: Онкология ЖКТ в хирургии",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Chirurgia -> Nowotwory przewodu pokarmowego",
+                popup: {
+                    what: "Рак желудка, колоректальный рак (Rak jelita grubego).",
+                    focus: "Скрининговая колоноскопия в Польше (с 50 лет или 40 при семейном анамнезе), операция Гартмана.",
+                    reading: "Chirurgia onkologiczna."
+                }
+            },
+            {
+                id: "w7d2",
+                title: "Вт: Сосудистая хирургия (Chirurgia naczyniowa)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Chirurgia -> Chirurgia naczyniowa",
+                popup: {
+                    what: "Ишемия нижних конечностей, аневризма брюшной аорты (Tętniak aorty).",
+                    focus: "Классификация Fontaine, лодыжечно-плечевой индекс (ABI < 0.9), показания к операции при аневризме (> 5.5 см).",
+                    reading: "Chirurgia naczyniowa."
+                }
+            },
+            {
+                id: "w7d3",
+                title: "Ср: Урология (Urologia) в практике врача",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Chirurgia -> Urologia",
+                popup: {
+                    what: "Почечная колика (Kolka nerkowa), ДГПЖ (BPH), перекрут яичка.",
+                    focus: "Лечение почечной колики (НПВП iv, Дротаверин), перекрут яичка (Skręt jąder - окно 6 часов).",
+                    reading: "Urologia podręcznik."
+                }
+            },
+            {
+                id: "w7d4",
+                title: "Чт: Травматология и Опорно-двигательный аппарат",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Chirurgia -> Ortopedia i traumatologia",
+                popup: {
+                    what: "Переломы костей, компартмент-синдром (Zespół ciasnoty powięziowej), вывихи.",
+                    focus: "Признаки компартмент-синдрома (боль, парестезии - экстренная фасциотомия), переломы шейки бедра.",
+                    reading: "Ortopedia podręcznik."
+                }
+            },
+            {
+                id: "w7d5",
+                title: "Пт: Детская хирургия и Анестезиология",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Chirurgia -> Chirurgia dziecięca / Anestezjologia",
+                popup: {
+                    what: "Пилоростеноз (Pylorostenosis), инвагинация (Wgłobienie jelit), Mallampati.",
+                    focus: "Симптом «оливковой косточки» при пилоростенозе, стул «galaretka malinowa» при инвагинации.",
+                    reading: "Chirurgia dziecięca."
+                }
+            },
+            {
+                id: "w7d6",
+                title: "Сб: Тестирование по Хирургии II",
+                time: "1.5 ч",
+                lepolekPath: "Testy -> Chirurgia II + Urologia (40 pytań CEM)",
+                popup: { what: "Итоговый тест по хирургическим дисциплинам.", focus: "Разбор вопросов по урологии и сосудам.", reading: "Заметки." }
+            }
+        ]
+    },
+    {
+        week: 8,
+        subject: "ginekologia",
+        title: "Неделя 8: Акушерство и Гинекология (Специфика Польши)",
+        days: [
+            {
+                id: "w8d1",
+                title: "Пн: Ведение беременности и Скрининги в Польше",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Ginekologia i położnictwo -> Ciąża prawidłowa",
+                popup: {
+                    what: "Физиология беременности, формула Naegele, Standard Opieki Okołoporodowej.",
+                    focus: "Обязательные исследования по неделям (USG 11-14, 18-22, 28-32, OGTT 24-28 нед, профилактика резус-конфликта).",
+                    reading: "Standardy PTGP / LEW w pigułce."
+                }
+            },
+            {
+                id: "w8d2",
+                title: "Вт: Патология беременности и КТГ",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Ginekologia i położnictwo -> Powikłania ciąży / KTG",
+                popup: {
+                    what: "Преэклампсия (Rzucawka), внематочная беременность, выкидыши.",
+                    focus: "Критерии преэклампсии (АД ≥ 140/90 + протеинурия ≥ 300 мг), использование MgSO4, КТГ.",
+                    reading: "Ginekologia i położnictwo."
+                }
+            },
+            {
+                id: "w8d3",
+                title: "Ср: Акушерские кровотечения и Неотложная помощь",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Ginekologia i położnictwo -> Krwotoki położnicze",
+                popup: {
+                    what: "Предлежание плаценты, преждевременная отслойка, атония матки (Atonia macicy).",
+                    focus: "Принцип 4T послеродового кровотечения (Tone, Trauma, Tissue, Thrombin), дозировки окситоцина.",
+                    reading: "PTGP Wytyczne."
+                }
+            },
+            {
+                id: "w8d4",
+                title: "Чт: Гинекологическая эндокринология и Контрацепция",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Ginekologia i położnictwo -> Ginekologia / Kontracepcja",
+                popup: {
+                    what: "СПКЯ (PCOS), эндометриоз, нарушения менструального цикла, контрацепция.",
+                    focus: "Критерии Роттердама для PCOS, противопоказания к КОК (тромбозы, мигрень с аурой).",
+                    reading: "Ginekologia podręcznik."
+                }
+            },
+            {
+                id: "w8d5",
+                title: "Пт: Онкогинекология и Скрининг рака",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Ginekologia i położnictwo -> Onkologia ginekologiczna",
+                popup: {
+                    what: "Рак шейки матки, рак эндометрия, рак яичников (Rak jajnika).",
+                    focus: "Цитологический скрининг (Bethesda), маркеры CA-125 и HE4 (индекс ROMA), ВПЧ (HPV).",
+                    reading: "Onkologia ginekologiczna."
+                }
+            },
+            {
+                id: "w8d6",
+                title: "Сб: Тест по Акушерству и Гинекологии",
+                time: "1.5 ч",
+                lepolekPath: "Testy -> Ginekologia i Położnictwo (40 pytań CEM)",
+                popup: { what: "Проверка знаний по акушерству и гинекологии.", focus: "Стандарты PTGP и неотложные состояния.", reading: "Заметки." }
+            }
+        ]
+    },
+    {
+        week: 9,
+        subject: "pediatria",
+        title: "Неделя 9: Педиатрия (Специфика Польши, Прививки, Развитие)",
+        days: [
+            {
+                id: "w9d1",
+                title: "Пн: Неонатология и Оценка Новорожденного",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Pediatria -> Neonatologia",
+                popup: {
+                    what: "Оценка по шкале Apgar, физиологическая и патологическая желтухи.",
+                    focus: "Скрининги новорожденных в Польше (гипотиреоз, муковисцидоз, SMA, фенилкетонурия), фотометрия.",
+                    reading: "Pediatria / Neonatologia."
+                }
+            },
+            {
+                id: "w9d2",
+                title: "Вт: Польский календарь прививок (PSO) и Детские инфекции",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Pediatria -> Szczepienia ochronne / Infekcje",
+                popup: {
+                    what: "Program Szczepień Ochronnych (PSO) в Польше, инфекции с сыпью.",
+                    focus: "Обязательные (obowiązkowe) и рекомендуемые (zalecane) прививки. Дифференциация сыпи: скарлатина, корь, краснуха, ветрянка.",
+                    reading: "Program Szczepień Ochronnych (PSO)."
+                }
+            },
+            {
+                id: "w9d3",
+                title: "Ср: Развитие ребенка и Профилактические осмотры (Bilanse)",
+                time: "2 ч",
+                lepolekPath: "Baza Pytań -> Pediatria -> Rozwój dziecka / Bilanse zdrowia",
+                popup: {
+                    what: "Оценка развития, центильные таблицы (Siatki centylowe).",
+                    focus: "Сроки проведения Bilanse zdrowia w Polsce (0, 1, 2, 4, 6, 10, 14, 18 лет), дефицит массы.",
+                    reading: "Pediatria: Rozwój."
+                }
+            },
+            {
+                id: "w9d4",
+                title: "Чт: Заболевания органов дыхания у детей",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Pediatria -> Układ oddechowy",
+                popup: {
+                    what: "Подсвязочный ларингит (Krup), Бронхиолит (RSV), Отит.",
+                    focus: "Лечение крупа (Deksametazon p.o. / Budesonid wziewnie), бронхиолит у младенцев.",
+                    reading: "Pediatria: Pulmonologia."
+                }
+            },
+            {
+                id: "w9d5",
+                title: "Пт: Инфекции мочевыводящих путей и Неотложные состояния",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Pediatria -> Zakażenia układu moczowego / Stany nagłe",
+                popup: {
+                    what: "ИМП (ZUM) у детей, фебрильные судороги (Drgawki gorączkowe), обезвоживание.",
+                    focus: "Показания к УЗИ почек при первом ZUM, купирование фебрильных судорог (Diazepam / Midazolam).",
+                    reading: "Pediatria: Nefrologia."
+                }
+            },
+            {
+                id: "w9d6",
+                title: "Сб: Субботний тест по Педиатрии",
+                time: "1.5 ч",
+                lepolekPath: "Testy -> Pediatria (40 pytań CEM)",
+                popup: { what: "Проверка знаний по педиатрическому блоку.", focus: "Календарь прививок PSO и нормативы.", reading: "Заметки." }
+            }
+        ]
+    },
+    {
+        week: 10,
+        subject: "rodzinna",
+        title: "Неделя 10: Семейная медицина (Medycyna Rodzinna) & Амбулатория",
+        days: [
+            {
+                id: "w10d1",
+                title: "Пн: Организация POZ и Скрининги в семейной медицине",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Medycyna rodzinna -> POZ i Profilaktyka",
+                popup: {
+                    what: "Структура POZ w Polsce, первичная профилактика, программы скрининга (ChUK, Mammografia, Cytologia).",
+                    focus: "Шкала CHADS-VASc в амбулатории, кривая риска SCORE2, критерии направления к узким специалистам.",
+                    reading: "Medycyna Rodzinna podręcznik / LEW w pigułce."
+                }
+            },
+            {
+                id: "w10d2",
+                title: "Вт: Амбулаторная Отоларингология (Laryngologia w POZ)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Medycyna rodzinna -> Laryngologia",
+                popup: {
+                    what: "Острый отит (Zap. ucha środkowego), Синусит (Zap. zatok), Тонзиллит (Angina).",
+                    focus: "Шкала Centor/McIsaac для решения о назначении антибиотика (Fenoksymetylopenicylina при СГА), отит у детей.",
+                    reading: "Medycyna Rodzinna: Laryngologia."
+                }
+            },
+            {
+                id: "w10d3",
+                title: "Ср: Амбулаторная Офтальмология (Okulistyka w POZ)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Medycyna rodzinna -> Okulistyka",
+                popup: {
+                    what: "Красный глаз (Czerwone oko), Конъюнктивиты, Глаукома, Катаракта, Отслойка сетчатки.",
+                    focus: "Дифференциация бактериального и вирусного конъюнктивита, неотложный приступ закрытоугольной глаукомы (Jaskra).",
+                    reading: "Okulistyka podręcznik."
+                }
+            },
+            {
+                id: "w10d4",
+                title: "Чт: Инфекции верхних и нижних дыхательных путей в POZ",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Medycyna rodzinna -> Zakażenia układu oddechowego",
+                popup: {
+                    what: "Бронхит, грипп, COVID-19, обострения аллергического ринита.",
+                    focus: "Рациональная антибиотикотерапия в амбулатории (Amoksycylina vs Makrolidy), симптоматическое лечение.",
+                    reading: "Wytyczne Rekomendacje Narodowego Programu Ochrony Antybiotyków."
+                }
+            },
+            {
+                id: "w10d5",
+                title: "Пт: Гериатрия и Геронтология в практике POZ",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Medycyna rodzinna -> Geriatria",
+                popup: {
+                    what: "Полипрагмазия, падения у пожилых людей, пролежни, деменция.",
+                    focus: "Критерии BEERS/STOPP-START для безопасного назначения лекарств пожилым пациентам.",
+                    reading: "Geriatria."
+                }
+            },
+            {
+                id: "w10d6",
+                title: "Сб: Тест по Семейной медицине",
+                time: "1.5 ч",
+                lepolekPath: "Testy -> Medycyna Rodzinna (40 pytań CEM)",
+                popup: { what: "Проверка амбулаторных протоколов POZ.", focus: "Антибиотики 1-й линии и скрининги.", reading: "Заметки." }
+            }
+        ]
+    },
+    {
+        week: 11,
+        subject: "psychiatria_neurologia",
+        title: "Неделя 11: Психиатрия, Неврология и Дерматология",
+        days: [
+            {
+                id: "w11d1",
+                title: "Пн: Психиатрия I (Депрессия, БАР, Психофармакотерапия)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Psychiatria -> Zaburzenia afektywne / Farmakoterapia",
+                popup: {
+                    what: "Большое депрессивное расстройство, биполярное расстройство (ChAD), антидепрессанты и нормотимики.",
+                    focus: "Препараты SSRI (Sertralina, Escitalopram), SNRI, побочные эффекты (серотониновый синдром), препараты лития.",
+                    reading: "Psychiatria podręcznik."
+                }
+            },
+            {
+                id: "w11d2",
+                title: "Вт: Психиатрия II (Шизофрения, Зависимости, Право)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Psychiatria -> Schizofrenia / Prawo w psychiatrii",
+                popup: {
+                    what: "Шизофрения, психозы, алкогольный делирий, Ustawa o ochronie zdrowia psychicznego.",
+                    focus: "Принудительная госпитализация без согласия (Art. 23 / Art. 24 UoOZP), лечение сидром отмены (Zesp. odstawienny).",
+                    reading: "Ustawa o ochronie zdrowia psychicznego / LEW w pigułce."
+                }
+            },
+            {
+                id: "w11d3",
+                title: "Ср: Неврология I (Инсульты, Эпилепсия, Головные боли)",
+                time: "3 ч",
+                lepolekPath: "Baza Pytań -> Neurologia -> Udary / Padaczka / Bóle głowy",
+                popup: {
+                    what: "Ишемический и геморрагический инсульты, эпилептический статус, мигрень.",
+                    focus: "Шкала NIHSS, окна тромболизиса и тромбэктомии, купирование эпистатуса (Benzodiazepiny iv/pr).",
+                    reading: "Neurologia."
+                }
+            },
+            {
+                id: "w11d4",
+                title: "Чт: Неврология II (SM, Болезнь Паркинсона, Нейродегенерации)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Neurologia -> Stwardnienie rozsiane / Choroba Parkinsona",
+                popup: {
+                    what: "Рассеянный склероз (SM), болезнь Паркинсона, полинейропатии, полиомиелит.",
+                    focus: "Диагностика SM (критерии McDonald, пульс-терапия метилпреднизолоном), триада Паркинсона (bradykinezja, drżenie, sztywność).",
+                    reading: "Neurologia podręcznik."
+                }
+            },
+            {
+                id: "w11d5",
+                title: "Пт: Дерматология и Венерология (Dermatologia)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Dermatologia",
+                popup: {
+                    what: "Псориаз (Łuszczyca), Атопический дерматит (AZS), Меланома (Czerniak), Сифилис.",
+                    focus: "Шкала ABCDE для меланомы, первичный аффект при сифилисе (Obrzęk stwardniały / Objaw Primary), глюкокортикостероиды местно.",
+                    reading: "Dermatologia."
+                }
+            },
+            {
+                id: "w11d6",
+                title: "Сб: Тест по Психиатрии, Неврологии и Дерматологии",
+                time: "1.5 ч",
+                lepolekPath: "Testy -> Psychiatria + Neurologia + Dermatologia (40 pytań CEM)",
+                popup: { what: "Проверка знаний смежных дисциплин.", focus: "Законы психиатрии и неврология.", reading: "Заметки." }
+            }
+        ]
+    },
+    {
+        week: 12,
+        subject: "prawo_powtorka",
+        title: "Неделя 12: Практическое право (Prawo Medyczne) & Итоговый тест Цикла 1",
+        days: [
+            {
+                id: "w12d1",
+                title: "Пн: Медицинское право и Биоэтика (Prawo medyczne)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Prawo medyczne i bioetyka [High Yield]",
+                popup: {
+                    what: "Права пациента, врачебная тайна, согласие на лечение (Zgoda na leczenie), Kodeks Etyki Lekarskiej.",
+                    focus: "Согласие несовершеннолетних (до 16 лет - родители; 16-18 лет - параллельное согласие ребенка и родителей), констатация смерти.",
+                    reading: "Kodeks Etyki Lekarskiej / Ustawa o zawodzie lekarza."
+                }
+            },
+            {
+                id: "w12d2",
+                title: "Вт: Медицинская экспертиза ZUS (Orzecznictwo i ZUS)",
+                time: "2.5 ч",
+                lepolekPath: "Baza Pytań -> Orzecznictwo lekarskie i ZUS",
+                popup: {
+                    what: "Больничные листы (ZUS ZLA), экспертиза временной и стойкой утраты трудоспособности.",
+                    focus: "Сроки выписки ZUS ZLA, больничный по уходу за ребенком, инвалидность (Niezdolność do pracy).",
+                    reading: "Orzecznictwo ZUS."
+                }
+            },
+            {
+                id: "w12d3",
+                title: "Ср: Итоговая Симмуляция LEW — Часть 1 (100 pytań CEM)",
+                time: "3 ч",
+                lepolekPath: "Egzaminy -> Symulacja LEK/LEW (100 pytań w trybie zegara)",
+                popup: {
+                    what: "Контрольная проверка всех 12 недель первого цикла.",
+                    focus: "Работа с таймингом (1 минута на вопрос).",
+                    reading: "Без справочников — только личный ресурс."
+                }
+            },
+            {
+                id: "w12d4",
+                title: "Чт: Разбор ошибок Симмуляции 1",
+                time: "2.5 ч",
+                lepolekPath: "Lepolek -> Zeszyt błędów -> Symulacja 1",
+                popup: {
+                    what: "Анализ ошибок первого итогового теста.",
+                    focus: "Выявление предметных пробелов.",
+                    reading: "Точечно по темам ошибок."
+                }
+            },
+            {
+                id: "w12d5",
+                title: "Пт: Итоговая Симмуляция LEW — Часть 2 (100 pytań CEM)",
+                time: "3 ч",
+                lepolekPath: "Egzaminy -> Symulacja LEK/LEW (100 pytań z Bazy CEM)",
+                popup: {
+                    what: "Вторая часть итогового экзамена Цикла 1.",
+                    focus: "Концентрация внимания и выносливость.",
+                    reading: "Экзаменационный режим."
+                }
+            },
+            {
+                id: "w12d6",
+                title: "Сб: Завершение Цикла 1 & Подготовка к Циклу 2 (Zeszyt Błędów)",
+                time: "1.5 ч",
+                lepolekPath: "Lepolek -> Ulubione / Zeszyt błędów",
+                popup: { what: "Формирование списка тем для проработки во 2-м цикле.", focus: "План на Январь-Апрель 2027.", reading: "Заметки." }
+            }
+        ]
+    }
+];
+
+/* LocalStorage Handlers */
+function loadProgress() {
+    return JSON.parse(localStorage.getItem('nostryfikacja_progress')) || {};
+}
+
+function loadNotes() {
+    return JSON.parse(localStorage.getItem('nostryfikacja_notes')) || {};
+}
+
+function loadCollapsedState() {
+    return JSON.parse(localStorage.getItem('nostryfikacja_collapsed')) || {};
+}
+
+function saveProgress(id, isChecked) {
+    const progress = loadProgress();
+    progress[id] = isChecked;
+    localStorage.setItem('nostryfikacja_progress', JSON.stringify(progress));
+    updateProgressBar();
+}
+
+function saveNote(id, text) {
+    const notes = loadNotes();
+    notes[id] = text;
+    localStorage.setItem('nostryfikacja_notes', JSON.stringify(notes));
+    renderPlan();
+}
+
+function saveCollapsedState(weekNum, isCollapsed) {
+    const state = loadCollapsedState();
+    state[weekNum] = isCollapsed;
+    localStorage.setItem('nostryfikacja_collapsed', JSON.stringify(state));
+}
+
+/* Render & Filter Function */
+function renderPlan() {
+    const container = document.getElementById('planContainer');
+    const filter = document.getElementById('subjectFilter').value;
+    const progress = loadProgress();
+    const notes = loadNotes();
+    const collapsedState = loadCollapsedState();
+
+    container.innerHTML = '';
+
+    planData.forEach(week => {
+        if (filter !== 'all' && week.subject !== filter) return;
+
+        const isWeekCompleted = week.days.every(d => !!progress[d.id]);
+        const isCollapsed = !!collapsedState[week.week];
+
+        const weekCard = document.createElement('div');
+        weekCard.className = `week-card ${isWeekCompleted ? 'week-completed' : ''} ${isCollapsed ? 'collapsed' : ''}`;
+        weekCard.id = `week-card-${week.week}`;
+
+        let daysHtml = '';
+        week.days.forEach(day => {
+            const isChecked = !!progress[day.id];
+            const noteText = notes[day.id] || '';
+            const hasNote = noteText.trim().length > 0;
+
+            daysHtml += `
+                <div class="day-item ${isChecked ? 'completed' : ''}" id="item-${day.id}">
+                    <input type="checkbox" class="checkbox-custom" id="check-${day.id}" ${isChecked ? 'checked' : ''} onchange="toggleDay('${day.id}', ${week.week})">
+                    
+                    <div>
+                        <div class="day-header-line">
+                            <span class="day-title">${day.title}</span>
+                            <span class="day-time">(${day.time})</span>
+                            
+                            <div class="info-pop-trigger" onclick="togglePopup(event, 'pop-${day.id}')">
+                                ℹ️
+                                <div class="popup-card" id="pop-${day.id}">
+                                    <div class="popup-title">🎯 Раздел High-Yield LEW</div>
+                                    <div class="popup-section"><strong>Что изучает:</strong> ${day.popup.what}</div>
+                                    <div class="popup-section"><strong>Ловушки CEM / Акцент:</strong> ${day.popup.focus}</div>
+                                    <div class="popup-section"><strong>Источники:</strong> ${day.popup.reading}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="day-lepolek">📍 ${day.lepolekPath}</div>
+
+                        <!-- Collapsible Note Area -->
+                        <div class="notes-wrapper">
+                            <button class="note-toggle-btn ${hasNote ? 'has-note' : ''}" onclick="toggleNoteInput('${day.id}')">
+                                ${hasNote ? '📝 Заметка [Заполнена]' : '📝 + Добавить заметку'}
+                            </button>
+
+                            <div class="note-input-container" id="note-box-${day.id}">
+                                <textarea class="note-textarea" id="note-text-${day.id}" placeholder="Запишите термины, дозировки или сложные моменты...">${noteText}</textarea>
+                                <div class="note-actions">
+                                    <button class="btn btn-sm btn-outline" onclick="toggleNoteInput('${day.id}')">Отмена</button>
+                                    <button class="btn btn-sm btn-success" onclick="submitNote('${day.id}')">ОК / Сохранить</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        weekCard.innerHTML = `
+            <div class="week-header" onclick="toggleWeekCollapse(${week.week})">
+                <div class="week-title-box">
+                    <span class="toggle-arrow">▼</span>
+                    <span class="week-title">${week.title}</span>
+                    <span class="week-check-icon">✅</span>
+                </div>
+                <span class="tag">${week.subject.toUpperCase()}</span>
+            </div>
+            <div class="day-list">
+                ${daysHtml}
+            </div>
+        `;
+
+        container.appendChild(weekCard);
+    });
+
+    updateProgressBar();
+}
+
+function toggleDay(id, weekNum) {
+    const checkbox = document.getElementById(`check-${id}`);
+    const item = document.getElementById(`item-${id}`);
+    if (checkbox.checked) {
+        item.classList.add('completed');
+    } else {
+        item.classList.remove('completed');
+    }
+    saveProgress(id, checkbox.checked);
+    updateWeekCompletionStatus(weekNum);
+}
+
+function updateWeekCompletionStatus(weekNum) {
+    const week = planData.find(w => w.week === weekNum);
+    if (!week) return;
+
+    const progress = loadProgress();
+    const isCompleted = week.days.every(d => !!progress[d.id]);
+    const card = document.getElementById(`week-card-${weekNum}`);
+
+    if (card) {
+        if (isCompleted) {
+            card.classList.add('week-completed');
+        } else {
+            card.classList.remove('week-completed');
+        }
+    }
+}
+
+function toggleWeekCollapse(weekNum) {
+    const card = document.getElementById(`week-card-${weekNum}`);
+    if (!card) return;
+    const isNowCollapsed = card.classList.toggle('collapsed');
+    saveCollapsedState(weekNum, isNowCollapsed);
+}
+
+function collapseAllWeeks() {
+    planData.forEach(week => {
+        const card = document.getElementById(`week-card-${week.week}`);
+        if (card) {
+            card.classList.add('collapsed');
+            saveCollapsedState(week.week, true);
+        }
+    });
+}
+
+function expandAllWeeks() {
+    planData.forEach(week => {
+        const card = document.getElementById(`week-card-${week.week}`);
+        if (card) {
+            card.classList.remove('collapsed');
+            saveCollapsedState(week.week, false);
+        }
+    });
+}
+
+function toggleNoteInput(id) {
+    const box = document.getElementById(`note-box-${id}`);
+    if (box.style.display === 'block') {
+        box.style.display = 'none';
+    } else {
+        box.style.display = 'block';
+    }
+}
+
+function submitNote(id) {
+    const text = document.getElementById(`note-text-${id}`).value;
+    saveNote(id, text);
+}
+
+function togglePopup(e, popId) {
+    e.stopPropagation();
+    const popup = document.getElementById(popId);
+    popup.classList.toggle('active');
+}
+
+document.addEventListener('click', () => {
+    document.querySelectorAll('.popup-card').forEach(p => p.classList.remove('active'));
+});
+
+function updateProgressBar() {
+    const progress = loadProgress();
+    let totalDays = 0;
+    let completedDays = 0;
+
+    planData.forEach(week => {
+        week.days.forEach(day => {
+            totalDays++;
+            if (progress[day.id]) completedDays++;
+        });
+    });
+
+    const percentage = Math.round((completedDays / totalDays) * 100) || 0;
+    document.getElementById('progressBar').style.width = percentage + '%';
+    document.getElementById('progressText').innerText = `${percentage}% выполнено (${completedDays}/${totalDays} дней)`;
+}
+
+function filterWeeks() {
+    renderPlan();
+}
+
+function resetProgress() {
+    if (confirm("Вы уверены, что хотите полностью сбросить отмеченный прогресс, заметки и состояние разделов?")) {
+        localStorage.removeItem('nostryfikacja_progress');
+        localStorage.removeItem('nostryfikacja_notes');
+        localStorage.removeItem('nostryfikacja_collapsed');
+        renderPlan();
+    }
+}
+
+/* ==========================================================
+   BACKGROUND AUDIO ALARM & NOTIFICATIONS ENGINE
+   ========================================================== */
+
+let audioCtx = null;
+let titleFlashInterval = null;
+const originalTitle = document.title;
+
+function initAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
+function requestNotificationPermission() {
+    if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+    }
+}
+
+function playLoudAlarmSound() {
+    initAudioContext();
+    if (!audioCtx) return;
+
+    const now = audioCtx.currentTime;
+    const pulses = [0.0, 0.15, 0.5, 0.65, 1.0, 1.15, 1.5, 1.65, 2.0, 2.15];
+
+    pulses.forEach(startTime => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(987.77, now + startTime);
+        osc.frequency.setValueAtTime(1318.51, now + startTime + 0.05);
+        
+        gain.gain.setValueAtTime(0, now + startTime);
+        gain.gain.linearRampToValueAtTime(0.4, now + startTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + startTime + 0.12);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start(now + startTime);
+        osc.stop(now + startTime + 0.12);
+    });
+}
+
+function testAlarmSound() {
+    initAudioContext();
+    playLoudAlarmSound();
+}
+
+function startTitleFlashing() {
+    stopTitleFlashing();
+    let flag = false;
+    titleFlashInterval = setInterval(() => {
+        document.title = flag ? "⏰ ВРЕМЯ ИСТЕКЛО!" : "🔔 LEW Pomodoro";
+        flag = !flag;
+    }, 700);
+}
+
+function stopTitleFlashing() {
+    if (titleFlashInterval) {
+        clearInterval(titleFlashInterval);
+        titleFlashInterval = null;
+    }
+    document.title = originalTitle;
+}
+
+function sendDesktopNotification(message) {
+    if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("LEW Pomodoro Будильник", {
+            body: message,
+            icon: "https://cdn-icons-png.flaticon.com/512/1827/1827315.png"
+        });
+    }
+}
+
+/* Pomodoro Timer Engine */
+let pomoSeconds = 45 * 60;
+let pomoInterval = null;
+let isPomoRunning = false;
+
+function updatePomoDisplay() {
+    const mins = Math.floor(pomoSeconds / 60);
+    const secs = pomoSeconds % 60;
+    document.getElementById('pomoDisplay').innerText = 
+        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function togglePomodoro() {
+    initAudioContext();
+    requestNotificationPermission();
+    stopTitleFlashing();
+
+    const startBtn = document.getElementById('pomoStartBtn');
+    if (isPomoRunning) {
+        clearInterval(pomoInterval);
+        isPomoRunning = false;
+        startBtn.innerText = 'Старт';
+        startBtn.classList.remove('btn-success');
+    } else {
+        isPomoRunning = true;
+        startBtn.innerText = 'Пауза';
+        startBtn.classList.add('btn-success');
+        
+        pomoInterval = setInterval(() => {
+            if (pomoSeconds > 0) {
+                pomoSeconds--;
+                updatePomoDisplay();
+            } else {
+                clearInterval(pomoInterval);
+                isPomoRunning = false;
+                startBtn.innerText = 'Старт';
+                startBtn.classList.remove('btn-success');
+                
+                playLoudAlarmSound();
+                startTitleFlashing();
+                sendDesktopNotification("Время блока истекло! Сделайте перерыв или перейдите к следующему шагу.");
+            }
+        }, 1000);
+    }
+}
+
+function resetPomodoro() {
+    clearInterval(pomoInterval);
+    isPomoRunning = false;
+    pomoSeconds = 45 * 60;
+    stopTitleFlashing();
+    document.getElementById('pomoStatus').innerText = 'Учеба (Блок 45 мин)';
+    document.getElementById('pomoStartBtn').innerText = 'Старт';
+    document.getElementById('pomoStartBtn').classList.remove('btn-success');
+    updatePomoDisplay();
+}
+
+function setPomoMode(minutes, statusText) {
+    initAudioContext();
+    requestNotificationPermission();
+    clearInterval(pomoInterval);
+    isPomoRunning = false;
+    pomoSeconds = minutes * 60;
+    stopTitleFlashing();
+    document.getElementById('pomoStatus').innerText = statusText;
+    document.getElementById('pomoStartBtn').innerText = 'Старт';
+    document.getElementById('pomoStartBtn').classList.remove('btn-success');
+    updatePomoDisplay();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderPlan();
+    updatePomoDisplay();
+});
+</script>
+
+</body>
+</html>

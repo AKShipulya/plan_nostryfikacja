@@ -421,9 +421,18 @@ function sendDesktopNotification(message) {
     }
 }
 
-let pomoSeconds = 45 * 60;
+// The first start is manual; after that study and break blocks follow each other automatically. «Пауза» stops the cycle.
+const POMO_MODES = {
+    study: { minutes: 45, status: 'Учеба (45 мин)', next: 'break', doneMessage: 'Учебный блок окончен — начался отдых 10 мин.' },
+    break: { minutes: 10, status: 'Отдых (10 мин)', next: 'study', doneMessage: 'Отдых окончен — начался учебный блок 45 мин.' }
+};
+const TITLE_FLASH_MS = 15000;
+
+let pomoMode = 'study';
+let pomoSeconds = POMO_MODES.study.minutes * 60;
 let pomoInterval = null;
 let isPomoRunning = false;
+let titleFlashTimeout = null;
 
 function updatePomoDisplay() {
     const mins = Math.floor(pomoSeconds / 60);
@@ -432,61 +441,68 @@ function updatePomoDisplay() {
         `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
+// Stops the countdown and loads a mode's full duration.
+function preparePomoMode(mode) {
+    clearInterval(pomoInterval);
+    isPomoRunning = false;
+    pomoMode = mode;
+    pomoSeconds = POMO_MODES[mode].minutes * 60;
+    document.getElementById('pomoStatus').innerText = POMO_MODES[mode].status;
+    document.getElementById('pomoStartBtn').innerText = 'Старт';
+    document.getElementById('pomoStartBtn').classList.remove('btn-success');
+    updatePomoDisplay();
+}
+
+function startPomoCountdown() {
+    const startBtn = document.getElementById('pomoStartBtn');
+    isPomoRunning = true;
+    startBtn.innerText = 'Пауза';
+    startBtn.classList.add('btn-success');
+
+    pomoInterval = setInterval(() => {
+        if (pomoSeconds > 0) {
+            pomoSeconds--;
+            updatePomoDisplay();
+        } else {
+            const finished = POMO_MODES[pomoMode];
+            preparePomoMode(finished.next);
+            startPomoCountdown();
+            playLoudAlarmSound();
+            // The next block is already running, so the title flashes only briefly instead of until the next click.
+            startTitleFlashing();
+            clearTimeout(titleFlashTimeout);
+            titleFlashTimeout = setTimeout(stopTitleFlashing, TITLE_FLASH_MS);
+            sendDesktopNotification(finished.doneMessage);
+        }
+    }, 1000);
+}
+
 function togglePomodoro() {
     initAudioContext();
     requestNotificationPermission();
     stopTitleFlashing();
 
-    const startBtn = document.getElementById('pomoStartBtn');
     if (isPomoRunning) {
         clearInterval(pomoInterval);
         isPomoRunning = false;
+        const startBtn = document.getElementById('pomoStartBtn');
         startBtn.innerText = 'Старт';
         startBtn.classList.remove('btn-success');
     } else {
-        isPomoRunning = true;
-        startBtn.innerText = 'Пауза';
-        startBtn.classList.add('btn-success');
-
-        pomoInterval = setInterval(() => {
-            if (pomoSeconds > 0) {
-                pomoSeconds--;
-                updatePomoDisplay();
-            } else {
-                clearInterval(pomoInterval);
-                isPomoRunning = false;
-                startBtn.innerText = 'Старт';
-                startBtn.classList.remove('btn-success');
-                playLoudAlarmSound();
-                startTitleFlashing();
-                sendDesktopNotification("Время блока истекло! Сделайте перерыв.");
-            }
-        }, 1000);
+        startPomoCountdown();
     }
 }
 
 function resetPomodoro() {
-    clearInterval(pomoInterval);
-    isPomoRunning = false;
-    pomoSeconds = 45 * 60;
     stopTitleFlashing();
-    document.getElementById('pomoStatus').innerText = 'Учеба (Блок 45 мин)';
-    document.getElementById('pomoStartBtn').innerText = 'Старт';
-    document.getElementById('pomoStartBtn').classList.remove('btn-success');
-    updatePomoDisplay();
+    preparePomoMode('study');
 }
 
-function setPomoMode(minutes, statusText) {
+function setPomoMode(mode) {
     initAudioContext();
     requestNotificationPermission();
-    clearInterval(pomoInterval);
-    isPomoRunning = false;
-    pomoSeconds = minutes * 60;
     stopTitleFlashing();
-    document.getElementById('pomoStatus').innerText = statusText;
-    document.getElementById('pomoStartBtn').innerText = 'Старт';
-    document.getElementById('pomoStartBtn').classList.remove('btn-success');
-    updatePomoDisplay();
+    preparePomoMode(mode);
 }
 
 // Data scripts are classic <script> tags after this file, so they have all run by DOMContentLoaded.

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>План нострификации</title>
-    <link rel="stylesheet" href="css/style.css?v=2026-09-30">
+    <link rel="stylesheet" href="css/style.css?v=2026-09-30-2">
 </head>
 <body>
 
@@ -42,7 +42,7 @@
 
 <div class="pomodoro-widget">
     <div class="pomo-header">Pomodoro Timer</div>
-    <div class="pomo-status" id="pomoStatus">Учеба (Блок 45 мин)</div>
+    <div class="pomo-status" id="pomoStatus">Учеба (45 мин)</div>
     <div class="pomo-timer" id="pomoDisplay">45:00</div>
 
     <div class="pomo-controls">
@@ -51,20 +51,20 @@
     </div>
 
     <div class="pomo-mode-btns">
-        <button class="btn btn-sm btn-outline" style="font-size: 0.65rem;" onclick="setPomoMode(45, 'Учеба (45 мин)')">45м Учеба</button>
-        <button class="btn btn-sm btn-outline" style="font-size: 0.65rem;" onclick="setPomoMode(10, 'Отдых (10 мин)')">10м Отдых</button>
+        <button class="btn btn-sm btn-outline" style="font-size: 0.65rem;" onclick="setPomoMode('study')">45м Учеба</button>
+        <button class="btn btn-sm btn-outline" style="font-size: 0.65rem;" onclick="setPomoMode('break')">10м Отдых</button>
     </div>
     <button class="audio-test-btn" onclick="testAlarmSound()">🔔 Проверить звук будильника</button>
 </div>
 
 <!-- Bump ?v= on every deploy: GitHub Pages caches ~10 min and a browser may mix new app.js with old data. -->
 <!-- Classic scripts (not ES modules, not fetch) so the page also works when opened from disk via file:// -->
-<script src="js/app.js?v=2026-09-30"></script>
-<script src="data/interna.js?v=2026-09-30"></script>
-<script src="data/chirurgia.js?v=2026-09-30"></script>
-<script src="data/ginekologia.js?v=2026-09-30"></script>
-<script src="data/pediatria.js?v=2026-09-30"></script>
-<script src="data/powtorka.js?v=2026-09-30"></script>
+<script src="js/app.js?v=2026-09-30-2"></script>
+<script src="data/interna.js?v=2026-09-30-2"></script>
+<script src="data/chirurgia.js?v=2026-09-30-2"></script>
+<script src="data/ginekologia.js?v=2026-09-30-2"></script>
+<script src="data/pediatria.js?v=2026-09-30-2"></script>
+<script src="data/powtorka.js?v=2026-09-30-2"></script>
 
 </body>
 </html>

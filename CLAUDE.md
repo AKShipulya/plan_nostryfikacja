@@ -92,8 +92,14 @@ silently transfers to material that was never studied.
 
 ## Content rules
 
-- **Language.** Explanations in Russian; on first mention a disease, scale or drug class gets its Polish term in parentheses:
-  «Туберкулёз лёгких (Gruźlica płuc)». CEM questions are in Polish, so the term is there for recognition, not translation.
+- **Language — Polish first.** CEM questions are in Polish, so every medical term must be recognisable in its Polish form.
+  - Subtopic chip `title`: Polish name first, short Russian gloss in parentheses — «Gruźlica płuc (туберкулёз лёгких)»,
+    «Leki I rzutu: ACEI/sartany + CCB/diuretyki (препараты 1-й линии)».
+  - Inside `what`/`where`/`study`/`focus` and the day `popup`: explanatory prose stays Russian, but diseases, signs, drugs (Polish INN
+    spelling: amlodypina, ramipryl, metformina), drug classes, abbreviations, scales, tests and procedures are written in Polish with a
+    Russian gloss at the first mention in that subtopic — «Metformina (метформин) отменяют…», «NLPZ (НПВП)», «USG (УЗИ)».
+  - Day and week titles keep the «Русский (Polski)» form.
+  - Never invent a Polish word or abbreviation; if unsure, use the international/Latin form plus the Russian gloss.
 - **Polish abbreviations** where Poland has its own: OZW (not ACS/ОКС), POChP, ZUM, RZS, PChN, NT, ZŻG, ŻChZZ, HDCz, wGKS, NLPZ,
   IPP, ChLC, WZJG, WZW, OZT, ZMO, DPN, NOP, BTA. Societies: PTK, PTD, PTGiP (not PTGP), PTNT, PTL, PTP, PTG-E, PTGHiŻD, PTN.
 - **Sources** in `where`: Szczeklik (Interna / Mały Szczeklik), Noszczyk «Chirurgia», Bręborowicz «Położnictwo i ginekologia»,

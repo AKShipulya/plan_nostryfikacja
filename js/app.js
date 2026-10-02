@@ -429,7 +429,8 @@ const POMO_MODES = {
 const TITLE_FLASH_MS = 15000;
 
 let pomoMode = 'study';
-let pomoSeconds = POMO_MODES.study.minutes * 60;
+let pomoSeconds = POMO_MODES.study.minutes * 60;   // remaining time; while running it is recomputed from pomoEndAt
+let pomoEndAt = 0;                                 // wall-clock ms when the running block ends
 let pomoInterval = null;
 let isPomoRunning = false;
 let titleFlashTimeout = null;
@@ -441,40 +442,54 @@ function updatePomoDisplay() {
         `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
+function showPomoMode() {
+    document.getElementById('pomoStatus').innerText = POMO_MODES[pomoMode].status;
+}
+
 // Stops the countdown and loads a mode's full duration.
 function preparePomoMode(mode) {
     clearInterval(pomoInterval);
     isPomoRunning = false;
     pomoMode = mode;
     pomoSeconds = POMO_MODES[mode].minutes * 60;
-    document.getElementById('pomoStatus').innerText = POMO_MODES[mode].status;
+    showPomoMode();
     document.getElementById('pomoStartBtn').innerText = 'Старт';
     document.getElementById('pomoStartBtn').classList.remove('btn-success');
     updatePomoDisplay();
 }
 
+// Browsers throttle timers in background tabs (Chrome down to once a minute), so the remaining time is derived from the
+// clock, not from counting ticks. If several blocks ended while the tab was asleep, all of them are skipped at once.
+function tickPomodoro() {
+    if (!isPomoRunning) return;
+    let finished = null;
+    while (pomoEndAt <= Date.now()) {
+        finished = POMO_MODES[pomoMode];
+        pomoMode = finished.next;
+        pomoEndAt += POMO_MODES[pomoMode].minutes * 60 * 1000;
+    }
+    pomoSeconds = Math.max(0, Math.ceil((pomoEndAt - Date.now()) / 1000));
+    updatePomoDisplay();
+
+    if (finished) {
+        showPomoMode();
+        playLoudAlarmSound();
+        // The next block is already running, so the title flashes only briefly instead of until the next click.
+        startTitleFlashing();
+        clearTimeout(titleFlashTimeout);
+        titleFlashTimeout = setTimeout(stopTitleFlashing, TITLE_FLASH_MS);
+        sendDesktopNotification(finished.doneMessage);
+    }
+}
+
 function startPomoCountdown() {
     const startBtn = document.getElementById('pomoStartBtn');
     isPomoRunning = true;
+    pomoEndAt = Date.now() + pomoSeconds * 1000;
     startBtn.innerText = 'Пауза';
     startBtn.classList.add('btn-success');
-
-    pomoInterval = setInterval(() => {
-        if (pomoSeconds > 0) {
-            pomoSeconds--;
-            updatePomoDisplay();
-        } else {
-            const finished = POMO_MODES[pomoMode];
-            preparePomoMode(finished.next);
-            startPomoCountdown();
-            playLoudAlarmSound();
-            // The next block is already running, so the title flashes only briefly instead of until the next click.
-            startTitleFlashing();
-            clearTimeout(titleFlashTimeout);
-            titleFlashTimeout = setTimeout(stopTitleFlashing, TITLE_FLASH_MS);
-            sendDesktopNotification(finished.doneMessage);
-        }
-    }, 1000);
+    clearInterval(pomoInterval);
+    pomoInterval = setInterval(tickPomodoro, 1000);
 }
 
 function togglePomodoro() {
@@ -483,6 +498,7 @@ function togglePomodoro() {
     stopTitleFlashing();
 
     if (isPomoRunning) {
+        tickPomodoro();   // freeze the exact remaining time before stopping
         clearInterval(pomoInterval);
         isPomoRunning = false;
         const startBtn = document.getElementById('pomoStartBtn');
@@ -492,6 +508,11 @@ function togglePomodoro() {
         startPomoCountdown();
     }
 }
+
+// Coming back to the tab: show the correct time immediately instead of waiting for the next throttled tick.
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) tickPomodoro();
+});
 
 function resetPomodoro() {
     stopTitleFlashing();
